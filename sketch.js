@@ -1,6 +1,3 @@
-// sketch.js
-
-// VARIABLES
 let video;
 let clasificador;
 
@@ -8,19 +5,22 @@ let etiqueta = "Esperando dispositivo...";
 let confianza = 0;
 
 let textoInformacion;
+let textoCategoria;
+let textoDato;
+let textoHistorial;
 
 let input;
 let botonBuscar;
 let botonCamara;
+let botonVoz;
 
 let camaraActiva = true;
 
-// API WIKIPEDIA
+let historial = [];
+
 let searchUrl =
   "https://es.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&redirects=1&titles=";
 
-
-// NOMBRES PARA MOSTRAR
 let traducciones = {
 
   "laptop": "Laptop",
@@ -70,133 +70,191 @@ let traducciones = {
 
 };
 
-
-// TÉRMINOS EXACTOS PARA WIKIPEDIA
 let wikipediaTitulos = {
 
   "Laptop": "Computadora portátil",
-
   "Computadora": "Computadora",
-
   "Monitor": "Monitor de computadora",
-
   "Pantalla": "Pantalla",
-
   "Televisión": "Televisor",
-
   "Teléfono móvil": "Teléfono móvil",
-
   "Teléfono inteligente": "Teléfono inteligente",
-
   "Teclado": "Teclado (informática)",
-
   "Mouse": "Ratón (informática)",
-
   "Control remoto": "Control remoto",
-
   "Impresora": "Impresora",
-
   "Altavoz": "Altavoz",
-
   "Micrófono": "Micrófono",
-
   "Cámara": "Cámara digital",
-
   "Cámara web": "Cámara web",
-
   "Router": "Router",
-
   "Módem": "Módem",
-
   "Fuente de alimentación": "Fuente de alimentación",
-
   "Disco duro": "Unidad de disco duro",
-
   "Memoria USB": "Memoria USB",
-
   "Audífonos": "Auricular",
-
   "Calculadora": "Calculadora",
-
   "Batería": "Batería eléctrica",
-
   "Ventilador": "Ventilador"
 
 };
 
+let categorias = {
 
-// PRELOAD
+  "Teclado": "Dispositivo de entrada",
+  "Mouse": "Dispositivo de entrada",
+  "Micrófono": "Dispositivo de entrada",
+  "Cámara": "Dispositivo de entrada",
+
+  "Monitor": "Dispositivo de salida",
+  "Altavoz": "Dispositivo de salida",
+  "Impresora": "Dispositivo de salida",
+
+  "Disco duro": "Almacenamiento",
+  "Memoria USB": "Almacenamiento",
+
+  "Router": "Comunicación",
+  "Módem": "Comunicación",
+
+  "Laptop": "Computadora portátil",
+
+  "Batería": "Fuente de energía"
+
+};
+
+let datosCuriosos = {
+
+  "Teclado":
+    "El teclado QWERTY fue diseñado para evitar que las teclas se atoraran.",
+
+  "Mouse":
+    "El primer mouse de computadora estaba hecho de madera.",
+
+  "Laptop":
+    "Las primeras laptops pesaban más de 10 kilogramos.",
+
+  "Router":
+    "Los routers permiten conectar muchos dispositivos a internet.",
+
+  "Monitor":
+    "Los primeros monitores eran monocromáticos."
+
+};
+
 function preload() {
 
   clasificador = ml5.imageClassifier("MobileNet");
 
 }
 
-
-// SETUP
 function setup() {
 
-  createCanvas(1300, 650);
+  createCanvas(1500, 850);
 
-  // CÁMARA
   video = createCapture(VIDEO);
 
   video.size(640, 480);
 
   video.hide();
 
-  // INPUT
   input = createInput("");
 
   input.position(880, 80);
 
   input.size(250);
 
-  // BOTÓN BUSCAR
   botonBuscar = createButton("Buscar información");
 
   botonBuscar.position(880, 120);
 
   botonBuscar.mousePressed(buscarWikipedia);
 
-  // BOTÓN CÁMARA
   botonCamara = createButton("Desactivar cámara");
 
-  botonCamara.position(1040, 120);
+  botonCamara.position(1050, 120);
 
   botonCamara.mousePressed(toggleCamara);
 
-  // TEXTO INFORMACIÓN
+  botonVoz = createButton("Leer información");
+
+  botonVoz.position(1210, 120);
+
+  botonVoz.mousePressed(leerTexto);
+
   textoInformacion = createP(
-    "Muestra un dispositivo electrónico a la cámara o escribe uno manualmente."
+    "Muestra un dispositivo electrónico."
   );
 
   textoInformacion.position(880, 170);
 
-  textoInformacion.size(340, 420);
+  textoInformacion.size(520, 260);
 
-  textoInformacion.style("color", "white");
+  estiloPanel(textoInformacion);
 
-  textoInformacion.style("font-size", "17px");
+  textoCategoria = createP("Categoría: ---");
 
-  textoInformacion.style("line-height", "26px");
+  textoCategoria.position(880, 450);
 
-  // PANEL CON SCROLL
-  textoInformacion.style("overflow-y", "scroll");
+  textoCategoria.size(520, 50);
 
-  textoInformacion.style("background-color", "#2b2b2b");
+  estiloPanel(textoCategoria);
 
-  textoInformacion.style("padding", "15px");
+  textoDato = createP("Dato curioso: ---");
 
-  textoInformacion.style("border-radius", "10px");
+  textoDato.position(880, 530);
 
-  // INICIAR IA
+  textoDato.size(520, 100);
+
+  estiloPanel(textoDato);
+
+  textoHistorial = createP("Historial: ---");
+
+  textoHistorial.position(20, 680);
+
+  textoHistorial.size(640, 120);
+
+  estiloPanel(textoHistorial);
+
   clasificarVideo();
 
 }
 
+function estiloPanel(elemento) {
 
-// ACTIVAR / DESACTIVAR CÁMARA
+  elemento.style("color", "white");
+
+  elemento.style("font-size", "16px");
+
+  elemento.style("line-height", "24px");
+
+  elemento.style("overflow-y", "scroll");
+
+  elemento.style("background-color", "#2b2b2b");
+
+  elemento.style("padding", "15px");
+
+  elemento.style("border-radius", "10px");
+
+}
+
+function leerTexto() {
+
+  speechSynthesis.cancel();
+
+  let texto = textoInformacion.elt.innerText;
+
+  let mensaje = new SpeechSynthesisUtterance(texto);
+
+  mensaje.lang = "es-ES";
+
+  mensaje.rate = 1;
+
+  mensaje.pitch = 1;
+
+  speechSynthesis.speak(mensaje);
+
+}
+
 function toggleCamara() {
 
   if (camaraActiva) {
@@ -206,8 +264,6 @@ function toggleCamara() {
     camaraActiva = false;
 
     botonCamara.html("Activar cámara");
-
-    etiqueta = "Cámara desactivada";
 
   } else {
 
@@ -227,15 +283,12 @@ function toggleCamara() {
 
 }
 
-
-// BUSCAR EN WIKIPEDIA
 function buscarWikipedia() {
 
   let topico = input.value();
 
   if (topico != "") {
 
-    // USAR TÍTULO CORRECTO
     let tituloWikipedia =
       wikipediaTitulos[topico] || topico;
 
@@ -247,8 +300,6 @@ function buscarWikipedia() {
 
 }
 
-
-// MOSTRAR RESUMEN
 function mostrarResumen(data) {
 
   let pages = data.query.pages;
@@ -257,16 +308,29 @@ function mostrarResumen(data) {
 
   let extract =
     pages[pageId].extract ||
-    "No se encontró información sobre este dispositivo.";
+    "No se encontró información.";
 
   textoInformacion.html(
     "<b>" + etiqueta + "</b><br><br>" + extract
   );
 
+  let categoria =
+    categorias[etiqueta] || "Tecnología";
+
+  textoCategoria.html(
+    "<b>Categoría:</b> " + categoria
+  );
+
+  let dato =
+    datosCuriosos[etiqueta] ||
+    "La tecnología cambia constantemente.";
+
+  textoDato.html(
+    "<b>Dato curioso:</b><br><br>" + dato
+  );
+
 }
 
-
-// CLASIFICAR VIDEO
 function clasificarVideo() {
 
   if (camaraActiva) {
@@ -278,7 +342,7 @@ function clasificarVideo() {
 }
 
 
-// RESULTADOS IA
+// RESULTADO
 function gotResult(resultados) {
 
   if (!camaraActiva) return;
@@ -289,30 +353,41 @@ function gotResult(resultados) {
 
   confianza = resultados[0].confidence;
 
-  // SOLO actualizar si encuentra un objeto electrónico
   if (traducciones[objetoDetectado]) {
 
-    etiqueta = traducciones[objetoDetectado];
+    let nuevaEtiqueta =
+      traducciones[objetoDetectado];
 
-    // MOSTRAR EN INPUT
-    input.value(etiqueta);
+    if (nuevaEtiqueta != etiqueta) {
 
-    // BUSCAR INFORMACIÓN
-    if (confianza > 0.70) {
+      etiqueta = nuevaEtiqueta;
 
-      buscarWikipedia();
+      input.value(etiqueta);
+
+      historial.unshift(etiqueta);
+
+      historial = historial.slice(0, 5);
+
+      textoHistorial.html(
+        "<b>Historial:</b><br><br>" +
+        historial.join("<br>")
+      );
+
+      if (confianza > 0.70) {
+
+        buscarWikipedia();
+
+      }
 
     }
 
   }
 
-  // REPETIR
   setTimeout(clasificarVideo, 1500);
 
 }
 
 
-// DRAW
 function draw() {
 
   background(25);
@@ -320,52 +395,62 @@ function draw() {
   // TÍTULO
   fill(255);
 
-  textSize(30);
+  textSize(34);
 
-  text("Aprendiendo Electrónica con IA", 20, 40);
+  text(
+    "¡APRENDE SOBRE LOS APARATOS ELECTRONICOS!",
+    20,
+    40
+  );
 
-  // VIDEO
+  textSize(18);
+
+  fill(180);
+
+  text(
+    "Reconocimiento inteligente de dispositivos electrónicos.",
+    20,
+    70
+  );
+
   if (camaraActiva) {
 
-    image(video, 20, 80, 640, 480);
+    image(video, 20, 100, 640, 480);
 
   } else {
 
     fill(60);
 
-    rect(20, 80, 640, 480);
+    rect(20, 100, 640, 480);
 
     fill(255);
 
     textSize(32);
 
-    text("Cámara desactivada", 180, 330);
+    text("Cámara desactivada", 180, 350);
 
   }
 
-  // MARCO
   noFill();
 
   stroke(255);
 
   strokeWeight(3);
 
-  rect(20, 80, 640, 480);
+  rect(20, 100, 640, 480);
 
-  // DISPOSITIVO
   noStroke();
 
   fill(0, 255, 0);
 
   textSize(24);
 
-  text("Dispositivo:", 20, 600);
+  text("Dispositivo:", 20, 620);
 
   fill(255);
 
-  text(etiqueta, 190, 600);
-
-  // CONFIANZA
+  text(etiqueta, 190, 620);
+                        
   fill(0, 200, 255);
 
   text(
@@ -373,7 +458,17 @@ function draw() {
     nf(confianza * 100, 2, 1) +
     "%",
     450,
-    600
+    620
+  );
+
+  fill(255, 200, 0);
+
+  textSize(18);
+
+  text(
+    "IA analizando dispositivos electrónicos...",
+    20,
+    650
   );
 
 }
