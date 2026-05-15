@@ -1,25 +1,62 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="">
+<html lang="es">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plantilla 2D</title>
+
+  <title>Aprendiendo Electrónica con IA</title>
+
   <style>
     body {
-      padding: 0;
       margin: 0;
-      background-color: #1b1b1b;
+      padding: 0;
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      background-color: #00aaff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 8px;
+    }
+
+    button:hover {
+      background-color: #0088cc;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
     }
   </style>
+
+  <!-- P5.js -->
   <script src="./libs/p5.min.js"></script>
-  <!-- <script src="./libs/addons/p5.sound.js"></script> -->
+
+  <!-- ML5.js -->
+  <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+
+  <!-- Archivo principal -->
   <script src="sketch.js"></script>
+
 </head>
 
 <body>
-  <main>
-  </main>
 </body>
 
 </html>
