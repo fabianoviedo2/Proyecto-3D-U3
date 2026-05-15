@@ -17,10 +17,10 @@ let camaraActiva = true;
 
 // API WIKIPEDIA
 let searchUrl =
-  "https://es.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=";
+  "https://es.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&redirects=1&titles=";
 
 
-// TRADUCCIONES
+// NOMBRES PARA MOSTRAR
 let traducciones = {
 
   "laptop": "Laptop",
@@ -67,6 +67,60 @@ let traducciones = {
   "battery": "Batería",
 
   "electric fan": "Ventilador"
+
+};
+
+
+// TÉRMINOS EXACTOS PARA WIKIPEDIA
+let wikipediaTitulos = {
+
+  "Laptop": "Computadora portátil",
+
+  "Computadora": "Computadora",
+
+  "Monitor": "Monitor de computadora",
+
+  "Pantalla": "Pantalla",
+
+  "Televisión": "Televisor",
+
+  "Teléfono móvil": "Teléfono móvil",
+
+  "Teléfono inteligente": "Teléfono inteligente",
+
+  "Teclado": "Teclado (informática)",
+
+  "Mouse": "Ratón (informática)",
+
+  "Control remoto": "Control remoto",
+
+  "Impresora": "Impresora",
+
+  "Altavoz": "Altavoz",
+
+  "Micrófono": "Micrófono",
+
+  "Cámara": "Cámara digital",
+
+  "Cámara web": "Cámara web",
+
+  "Router": "Router",
+
+  "Módem": "Módem",
+
+  "Fuente de alimentación": "Fuente de alimentación",
+
+  "Disco duro": "Unidad de disco duro",
+
+  "Memoria USB": "Memoria USB",
+
+  "Audífonos": "Auricular",
+
+  "Calculadora": "Calculadora",
+
+  "Batería": "Batería eléctrica",
+
+  "Ventilador": "Ventilador"
 
 };
 
@@ -181,7 +235,11 @@ function buscarWikipedia() {
 
   if (topico != "") {
 
-    let url = searchUrl + topico;
+    // USAR TÍTULO CORRECTO
+    let tituloWikipedia =
+      wikipediaTitulos[topico] || topico;
+
+    let url = searchUrl + tituloWikipedia;
 
     loadJSON(url, mostrarResumen);
 
